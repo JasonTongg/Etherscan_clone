@@ -1,20 +1,26 @@
 import { useSelector, useDispatch } from "react-redux";
 import React, { useEffect, useState } from "react";
-import { ethPrice, ethSupply, setTransactions, setBlocks } from "../store/data";
+import {
+  ethPrice,
+  ethSupply,
+  setTransactions,
+  setBlocks,
+} from "../../store/data";
 import { createWeb3Modal, defaultConfig } from "@web3modal/ethers/react";
 import {
   useWeb3ModalAccount,
   useWeb3ModalProvider,
 } from "@web3modal/ethers/react";
 import { ethers } from "ethers";
-import Navbar from "../components/navbar";
-import "../app/globals.css";
+import Navbar from "../../components/navbar";
+import "../../app/globals.css";
 import { IoSearch } from "react-icons/io5";
 import { FaEthereum } from "react-icons/fa6";
 import { TbWorld } from "react-icons/tb";
 import { PiCubeDuotone } from "react-icons/pi";
 import { FiFileText } from "react-icons/fi";
 import Pagination from "@mui/material/Pagination";
+import { useRouter } from "next/router";
 
 const projectId = "d4e79a3bc1f5545a422926acb6bb88b8";
 
@@ -52,36 +58,31 @@ function useEthereumWallet() {
   return { address, chainId, isConnected, ethersProvider, signer };
 }
 
-export default function Transactions() {
+export default function BlockDetail() {
   const dispatch = useDispatch();
   const [tenBlockWithDetails, setTenBlockWithDetails] = useState([]);
   const [currentBlock, setCurrentBlock] = useState([]);
-  const [topTenBlock, setTopTenBlock] = useState([]);
-  const [transaction, setTransaction] = useState([]);
   const provider = new ethers.BrowserProvider(window.ethereum);
   const { address, chainId, isConnected, ethersProvider, signer } =
     useEthereumWallet();
   const price = useSelector((state) => state.reducer.ethPrice);
   const supply = useSelector((state) => state.reducer.ethSupply);
   const [startIndex, setStartIndex] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
+  const router = useRouter();
+  const { block } = router.query;
+  const [latestBlock, setLatestBlock] = useState(0);
 
   const accountDetails = async () => {
-    try {
-      const getCurrentBlock = await provider.getBlockNumber();
-
-      const blockTransaction = await provider.getBlock(getCurrentBlock);
-
-      const transactionDetails = await Promise.all(
-        blockTransaction.transactions.map(async (txHash) => {
-          const txDetails = await provider.getTransaction(txHash);
-          return txDetails;
-        })
-      );
-      setTransaction(transactionDetails);
-      console.log(transactionDetails);
-    } catch (error) {
-      console.log("something went wrong...", error);
+    if (block) {
+      try {
+        const latestBlock = await provider.getBlockNumber();
+        const topTenDetails = await provider.getBlock(+block);
+        setTenBlockWithDetails(topTenDetails);
+        setLatestBlock(latestBlock);
+        console.log(topTenDetails);
+      } catch (error) {
+        console.log("something went wrong...", error);
+      }
     }
   };
 
@@ -139,7 +140,7 @@ export default function Transactions() {
     dispatch(ethPrice());
     dispatch(ethSupply());
     accountDetails();
-  }, [dispatch]);
+  }, [dispatch, block]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
@@ -187,71 +188,50 @@ export default function Transactions() {
           </div>
         </div>
       </div>
-      <div className="w-[95vw]">
-        <div className="shadow-xl rounded-[15px] overflow-hidden">
-          <div className="flex flex-col gap-3 w-full px-5 pb-5 mt-4">
-            <div
-              className="grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
-              style={{
-                gridTemplateColumns: "auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr",
-              }}
-            >
-              <FiFileText className="text-3xl opacity-80" />
-              <p className="text-base font-bold">Transaction Hash</p>
-              <p className="text-base font-bold">Method Hash</p>
-              <p className="text-base font-bold">Block</p>
-              <p className="text-base font-bold">From</p>
-              <p className="text-base font-bold">To</p>
-              <p className="text-base font-bold">Amount (ETH)</p>
-              <p className="text-base font-bold">Txn Fee (ETH)</p>
-            </div>
-            {transaction
-              .filter(
-                (_, index) => index >= startIndex && index <= startIndex + 10
-              )
-              ?.map((txDetails, index) => (
-                <div
-                  key={index}
-                  className="[&>*]:break-all grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
-                  style={{
-                    gridTemplateColumns: "auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr",
-                  }}
-                >
-                  <FiFileText className="text-3xl opacity-80" />
-                  <p>
-                    {txDetails.hash.substring(0, 5)}...
-                    {txDetails.hash.substr(txDetails.hash.length - 5)}
-                  </p>
-                  <p> {txDetails.data.slice(0, 10)} </p>
-                  <p>{txDetails.blockNumber}</p>
-                  <p>
-                    {txDetails.from.substring(0, 5)}...
-                    {txDetails.from.substr(txDetails.from.length - 5)}
-                  </p>
-                  <p>
-                    {txDetails.to?.substring(0, 5)}...
-                    {txDetails.to?.substr(txDetails.to.length - 5) ||
-                      "Contract Interaction"}
-                  </p>
-                  <p>
-                    {ethers.formatEther(txDetails.value).length > 10 ||
-                    ethers.formatEther(txDetails.value) === "0.0"
-                      ? 0
-                      : ethers.formatEther(txDetails.value)}{" "}
-                    ETH
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {ethers.formatEther(txDetails.gasPrice).substring(0, 13)}{" "}
-                    ETH
-                  </p>
-                </div>
-              ))}
-          </div>
-          <div className="w-full flex items-center justify-center my-4">
-            <Pagination count={10} onChange={handlePage} />
-          </div>
+      {tenBlockWithDetails && latestBlock && (
+        <div>
+          <p>{block}</p>
+          <p>Block Height: {tenBlockWithDetails?.number}</p>
+          <p>
+            Status:{" "}
+            {latestBlock - tenBlockWithDetails?.number > 0
+              ? "Finalized"
+              : "Unfinalized"}
+          </p>
+          <p>
+            Timestamp:{" "}
+            {tenBlockWithDetails?.timestamp
+              ? `${timeAgoFromTimestamp(tenBlockWithDetails?.timestamp)} (${
+                  tenBlockWithDetails?.date
+                })`
+              : "Loading..."}
+          </p>
+          <p>
+            Transactions: {tenBlockWithDetails?.transactions?.length}{" "}
+            transactions
+          </p>
+          <p>Fee Recipient: {tenBlockWithDetails?.miner}</p>
+          <p>
+            Total Difficulty: {(tenBlockWithDetails?.difficulty).toString()}
+          </p>
+          <p>
+            Gas Used: {Number(tenBlockWithDetails?.gasUsed)} (
+            {(
+              (Number(tenBlockWithDetails?.gasUsed) /
+                Number(tenBlockWithDetails?.gasLimit)) *
+              100
+            ).toFixed(2)}
+            %)
+          </p>
+          <p>Gas Limit: {Number(tenBlockWithDetails?.gasLimit)}</p>
+          <p>Base Fee Per Gas: {Number(tenBlockWithDetails?.baseFeePerGas)}</p>
+          <p>Hash: {tenBlockWithDetails?.hash}</p>
+          <p>Parent Hash: {tenBlockWithDetails?.parentHash}</p>
+          <p>StateRoot: {tenBlockWithDetails?.stateRoot}</p>
+          <p>ReceiptsRoot : {tenBlockWithDetails?.receiptsRoot}</p>
+          <p>Nonce: {tenBlockWithDetails?.nonce}</p>
         </div>
-      </div>
+      )}
     </div>
   );
 }

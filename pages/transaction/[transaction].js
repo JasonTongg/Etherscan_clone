@@ -1,20 +1,26 @@
 import { useSelector, useDispatch } from "react-redux";
 import React, { useEffect, useState } from "react";
-import { ethPrice, ethSupply, setTransactions, setBlocks } from "../store/data";
+import {
+  ethPrice,
+  ethSupply,
+  setTransactions,
+  setBlocks,
+} from "../../store/data";
 import { createWeb3Modal, defaultConfig } from "@web3modal/ethers/react";
 import {
   useWeb3ModalAccount,
   useWeb3ModalProvider,
 } from "@web3modal/ethers/react";
 import { ethers } from "ethers";
-import Navbar from "../components/navbar";
-import "../app/globals.css";
+import Navbar from "../../components/navbar";
+import "../../app/globals.css";
 import { IoSearch } from "react-icons/io5";
 import { FaEthereum } from "react-icons/fa6";
 import { TbWorld } from "react-icons/tb";
 import { PiCubeDuotone } from "react-icons/pi";
 import { FiFileText } from "react-icons/fi";
-import Link from "next/link";
+import Pagination from "@mui/material/Pagination";
+import { useRouter } from "next/router";
 
 const projectId = "d4e79a3bc1f5545a422926acb6bb88b8";
 
@@ -52,47 +58,35 @@ function useEthereumWallet() {
   return { address, chainId, isConnected, ethersProvider, signer };
 }
 
-export default function Index() {
+export default function Transactions() {
   const dispatch = useDispatch();
-  const price = useSelector((state) => state.reducer.ethPrice);
-  const supply = useSelector((state) => state.reducer.ethSupply);
+  const [transactionDetail, setTransactionDetail] = useState([]);
+  const provider = new ethers.BrowserProvider(window.ethereum);
   const { address, chainId, isConnected, ethersProvider, signer } =
     useEthereumWallet();
-  const provider = new ethers.BrowserProvider(window.ethereum);
-
-  const [balance, setBalance] = useState(0);
-  const [tenBlockWithDetails, setTenBlockWithDetails] = useState([]);
-  const [currentBlock, setCurrentBlock] = useState([]);
-  const [topTenBlock, setTopTenBlock] = useState([]);
-  const [transaction, setTransaction] = useState([]);
-  const [gasPrice, setGasPrice] = useState(0);
+  const price = useSelector((state) => state.reducer.ethPrice);
+  const supply = useSelector((state) => state.reducer.ethSupply);
+  const [startIndex, setStartIndex] = useState(0);
+  const router = useRouter();
+  const { transaction } = router.query;
+  const [transactionReceipt, setTransactionReceipt] = useState();
+  const [block, setBlock] = useState();
 
   const accountDetails = async () => {
     try {
-      const getCurrentBlock = await provider.getBlockNumber();
-      setCurrentBlock(getCurrentBlock);
-
-      const blockTransaction = await provider.getBlock(getCurrentBlock);
-      setTransaction(blockTransaction.transactions);
-
-      const prevBlock = getCurrentBlock - 10;
-      const topTen = [];
-      for (let i = getCurrentBlock; i > prevBlock; i--) {
-        topTen.push(i);
-      }
-      setTopTenBlock(topTen);
-
-      const topTenDetail = [];
-      topTen.map(async (item) => {
-        const details = await provider.getBlock(item);
-        topTenDetail.push(details);
-      });
-      setTenBlockWithDetails(topTenDetail);
-
-      const gasPrice = await provider.send("eth_gasPrice", []);
-      setGasPrice(ethers.formatUnits(gasPrice, "gwei"));
+      console.log(transaction);
+      const transactionDetails = await provider.getTransaction(transaction);
+      setTransactionDetail(transactionDetails);
+      console.log(transactionDetails);
+      const receipt = await provider.getTransactionReceipt(transaction);
+      //   const receipt2 = await provider.getTransactionReceipt(transaction);
+      const block = await provider.getBlock(transactionDetails.blockNumber);
+      setTransactionReceipt(receipt);
+      setBlock(block);
+      console.log(receipt);
+      console.log(block);
     } catch (error) {
-      console.log("something when wrong...", error);
+      console.log("something went wrong...", error);
     }
   };
 
@@ -111,17 +105,6 @@ export default function Index() {
       }
     } catch (err) {
       console.error("Ethereum wallet connection failed:", err);
-    }
-  };
-
-  const getBalance = async () => {
-    if (isConnected && ethersProvider) {
-      try {
-        const balance = await ethersProvider.getBalance(address);
-        setBalance(ethers.formatEther(balance));
-      } catch (error) {
-        console.error("Error fetching balance: ", error);
-      }
     }
   };
 
@@ -153,24 +136,24 @@ export default function Index() {
     }
   }
 
+  const handlePage = (e, page) => {
+    setStartIndex((page - 1) * 10 - 1);
+  };
+
   useEffect(() => {
     dispatch(ethPrice());
     dispatch(ethSupply());
     accountDetails();
-  }, [dispatch]);
-
-  if (price === undefined || supply === undefined) {
-    return null;
-  }
+  }, [dispatch, transaction]);
 
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center w-full">
       <Navbar
         isConnected={isConnected}
         address={address}
         connectWallet={connectEthereumWallet}
       />
-      <div className="bg-header p-8">
+      <div className="bg-header p-8 w-full">
         <div className="flex items-center justify-center gap-8">
           <div className="p-4 rounded-[15px] flex flex-col gap-3">
             <h2 className="text-neutral-lightGray font-medium text-xl">
@@ -209,69 +192,68 @@ export default function Index() {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 justify-center gap-5 p-8">
-        <div className="shadow-xl rounded-[15px]  overflow-hidden">
-          <p className="font-bold px-5 pt-5 mb-2">Latest Block</p>
-          <div className="flex flex-col w-full overflow-auto h-[500px]">
-            {tenBlockWithDetails?.map((item, index) => (
-              <Link
-                href={`block/${item.number}`}
-                key={index}
-                className="hover:bg-gray-200 cursor-pointer grid px-5 items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 py-2"
-                style={{ gridTemplateColumns: "auto 120px 1fr" }}
-              >
-                <PiCubeDuotone className="text-3xl opacity-80" />
-                <div>
-                  <p className="text-md">{item.number}</p>
-                  <p className="text-xs">
-                    {timeAgoFromTimestamp(item.timestamp)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-md">
-                    Fee Recipient {item.miner.substring(0, 8)}...
-                    {item.miner.substr(item.miner.length - 8)}
-                  </p>
-                  <p className="text-xs">
-                    {item.transactions.length} Transactions
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-          <Link
-            href="/block"
-            className="block text-center w-full p-5 bg-gray-200"
-          >
-            View All Blocks
-          </Link>
+      {transactionDetail && transactionReceipt && block ? (
+        <div>
+          <p>Transaction Hash: {transactionDetail?.hash}</p>
+          <p>
+            Status: {transactionReceipt?.status === 1 ? "Success" : "Failed"}
+          </p>
+          <p>Block: {transactionDetail?.blockNumber}</p>
+          <p>Timestamp: {timeAgoFromTimestamp(block?.timestamp)}</p>
+          <p>From: {transactionDetail?.from}</p>
+          <p>To: {transactionDetail?.to}</p>
+          <p>
+            Value:{" "}
+            {transactionDetail?.value
+              ? ethers?.formatEther(transactionDetail.value)
+              : "Loading..."}{" "}
+            ETH
+          </p>
+          <p>
+            Transaction Fee:{" "}
+            {transactionDetail?.gasPrice && transactionReceipt?.gasUsed
+              ? ethers.formatEther(
+                  BigInt(
+                    Number(transactionDetail?.gasPrice) *
+                      Number(transactionReceipt?.gasUsed)
+                  )
+                ) + " ETH"
+              : "Loading..."}
+          </p>
+          <p>
+            Gas Price:{" "}
+            {transactionDetail?.gasPrice
+              ? ethers?.formatUnits(transactionDetail?.gasPrice, "gwei")
+              : "Loading..."}{" "}
+            Gwei
+          </p>
+          <p>Gas Limit: {Number(transactionDetail?.gasLimit)}</p>
+          <p>gas Used: {Number(transactionReceipt?.gasUsed)}</p>
+          <p>
+            Base Gas Fee:{" "}
+            {block?.baseFeePerGas
+              ? ethers.formatUnits(block?.baseFeePerGas, "gwei") + " Gwei"
+              : "Loading..."}
+          </p>
+          <p>
+            Burnt:{" "}
+            {block?.baseFeePerGas && transactionReceipt?.gasUsed
+              ? ethers.formatEther(
+                  BigInt(
+                    Number(block?.baseFeePerGas) *
+                      Number(transactionReceipt?.gasUsed)
+                  )
+                ) + " ETH"
+              : "loading..."}
+          </p>
+          <p>Txn Type: {transactionReceipt?.type}</p>
+          <p>Nonce: {transactionDetail?.nonce}</p>
+          <p>Position in Block: {transactionDetail?.index}</p>
+          <p className="break-all">Input Data: {transactionDetail?.data}</p>
         </div>
-        <div className="shadow-xl rounded-[15px]  overflow-hidden">
-          <p className="font-bold px-5 pt-5 mb-2">Latest Transaction</p>
-          <div className="flex flex-col shadow-xl pb-5 w-full overflow-auto h-[500px]">
-            {transaction
-              .filter((_, index) => index < 10)
-              .map((item, index) => (
-                <Link
-                  href={`/transaction/${item}`}
-                  className="hover:bg-gray-200 cursor-pointer px-5 grid items-center content-center gap-3 w-full justify-center justify-items-center border-t-[1px] border-gray-300 py-5"
-                  style={{ gridTemplateColumns: "auto 1fr" }}
-                >
-                  <FiFileText className="text-2xl opacity-80" />
-                  <p key={index} className="break-all text-md">
-                    {item}
-                  </p>
-                </Link>
-              ))}
-          </div>
-          <Link
-            href="/transaction"
-            className="text-center block w-full p-5 bg-gray-200"
-          >
-            View All Transaction
-          </Link>
-        </div>
-      </div>
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
   );
 }

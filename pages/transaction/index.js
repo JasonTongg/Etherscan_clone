@@ -1,20 +1,26 @@
 import { useSelector, useDispatch } from "react-redux";
 import React, { useEffect, useState } from "react";
-import { ethPrice, ethSupply, setTransactions, setBlocks } from "../store/data";
+import {
+  ethPrice,
+  ethSupply,
+  setTransactions,
+  setBlocks,
+} from "../../store/data";
 import { createWeb3Modal, defaultConfig } from "@web3modal/ethers/react";
 import {
   useWeb3ModalAccount,
   useWeb3ModalProvider,
 } from "@web3modal/ethers/react";
 import { ethers } from "ethers";
-import Navbar from "../components/navbar";
-import "../app/globals.css";
+import Navbar from "../../components/navbar";
+import "../../app/globals.css";
 import { IoSearch } from "react-icons/io5";
 import { FaEthereum } from "react-icons/fa6";
 import { TbWorld } from "react-icons/tb";
 import { PiCubeDuotone } from "react-icons/pi";
 import { FiFileText } from "react-icons/fi";
 import Pagination from "@mui/material/Pagination";
+import Link from "next/link";
 
 const projectId = "d4e79a3bc1f5545a422926acb6bb88b8";
 
@@ -52,7 +58,7 @@ function useEthereumWallet() {
   return { address, chainId, isConnected, ethersProvider, signer };
 }
 
-export default function Blocks() {
+export default function Transactions() {
   const dispatch = useDispatch();
   const [tenBlockWithDetails, setTenBlockWithDetails] = useState([]);
   const [currentBlock, setCurrentBlock] = useState([]);
@@ -69,25 +75,8 @@ export default function Blocks() {
   const accountDetails = async () => {
     try {
       const getCurrentBlock = await provider.getBlockNumber();
-      setCurrentBlock(getCurrentBlock);
 
       const blockTransaction = await provider.getBlock(getCurrentBlock);
-      setTransaction(blockTransaction.transactions);
-
-      const prevBlock = getCurrentBlock - 100;
-      const topTen = [];
-      for (let i = getCurrentBlock; i > prevBlock; i--) {
-        topTen.push(i);
-      }
-      setTopTenBlock(topTen);
-
-      // Ensure all blocks are fetched before setting state
-      const topTenDetails = await Promise.all(
-        topTen.map(async (item) => {
-          return await provider.getBlock(item);
-        })
-      );
-      setTenBlockWithDetails(topTenDetails);
 
       const transactionDetails = await Promise.all(
         blockTransaction.transactions.map(async (txHash) => {
@@ -207,77 +196,76 @@ export default function Blocks() {
       <div className="w-[95vw]">
         <div className="shadow-xl rounded-[15px] overflow-hidden">
           <div className="flex flex-col gap-3 w-full px-5 pb-5 mt-4">
-            <p>Total of {currentBlock.toLocaleString()} blocks</p>
             <div
               className="grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
               style={{
-                gridTemplateColumns:
-                  "auto 120px 120px 50px 1fr 1fr 120px 120px",
+                gridTemplateColumns: "auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr",
               }}
             >
-              <PiCubeDuotone className="text-3xl opacity-80" />
+              <FiFileText className="text-3xl opacity-80" />
+              <p className="text-base font-bold">Transaction Hash</p>
+              <p className="text-base font-bold">Method Hash</p>
               <p className="text-base font-bold">Block</p>
-              <p className="text-base font-bold">Age</p>
-              <p className="text-base font-bold">Txn</p>
-              <p className="text-base font-bold">Fee Recipient</p>
-              <p className="text-base font-bold">Gas Used</p>
-              <p className="text-base font-bold">Gas Limit</p>
-              <p className="text-base font-bold">Base Fee</p>
+              <p className="text-base font-bold">From</p>
+              <p className="text-base font-bold">To</p>
+              <p className="text-base font-bold">Amount (ETH)</p>
+              <p className="text-base font-bold">Txn Fee (ETH)</p>
             </div>
-            {tenBlockWithDetails
+            {transaction
               .filter(
                 (_, index) => index >= startIndex && index <= startIndex + 10
               )
-              ?.map((item, index) => (
+              ?.map((txDetails, index) => (
                 <div
                   key={index}
-                  className="grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
+                  className="[&>*]:break-all grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
                   style={{
-                    gridTemplateColumns:
-                      "auto 120px 120px 50px 1fr 1fr 120px 120px",
+                    gridTemplateColumns: "auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr",
                   }}
                 >
-                  <PiCubeDuotone className="text-3xl opacity-80" />
-                  <p className="text-md">{item.number}</p>
-                  <p className="text-md">
-                    {timeAgoFromTimestamp(item.timestamp)}
+                  <FiFileText className="text-3xl opacity-80" />
+                  <Link
+                    href={`/transaction/${txDetails?.hash}`}
+                    className="cursor-pointer"
+                  >
+                    {txDetails.hash.substring(0, 5)}...
+                    {txDetails.hash.substr(txDetails.hash.length - 5)}
+                  </Link>
+                  <p> {txDetails.data.slice(0, 10)} </p>
+                  <Link
+                    href={`/block/${txDetails?.blockNumber}`}
+                    className="cursor-pointer"
+                  >
+                    {txDetails.blockNumber}
+                  </Link>
+                  <p>
+                    {txDetails.from.substring(0, 5)}...
+                    {txDetails.from.substr(txDetails.from.length - 5)}
                   </p>
-                  <p className="text-md">{item.transactions.length}</p>
-                  <p className="text-sm">
-                    {item.miner.substring(0, 8)}...
-                    {item.miner.substr(item.miner.length - 8)}
+                  <p>
+                    {txDetails.to?.substring(0, 5)}...
+                    {txDetails.to?.substr(txDetails.to.length - 5) ||
+                      "Contract Interaction"}
                   </p>
-                  <div className="w-full flex flex-col items-center justify-center gap-1">
-                    <p className="text-center">
-                      {Number(item.gasUsed).toLocaleString()}{" "}
-                      <span className="text-gray-500">
-                        (
-                        {(
-                          (Number(item.gasUsed) / Number(item.gasLimit)) *
-                          100
-                        ).toFixed(1)}
-                        %)
-                      </span>
-                    </p>
-                    <div className="h-[2px] w-full bg-gray-500 rounded-[200px] overflow-hidden">
-                      <div
-                        className="h-[2px] bg-status-successGreen"
-                        style={{
-                          width: `${(
-                            (Number(item.gasUsed) / Number(item.gasLimit)) *
-                            100
-                          ).toFixed(1)}%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                  <p>{Number(item.gasLimit).toLocaleString()}</p>
-                  <p>{Number(item.baseFeePerGas).toLocaleString()}</p>
+                  <p>
+                    {ethers.formatEther(txDetails.value).length > 10 ||
+                    ethers.formatEther(txDetails.value) === "0.0"
+                      ? 0
+                      : ethers.formatEther(txDetails.value)}{" "}
+                    ETH
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {ethers.formatEther(txDetails.gasPrice).substring(0, 13)}{" "}
+                    ETH
+                  </p>
                 </div>
               ))}
           </div>
           <div className="w-full flex items-center justify-center my-4">
-            <Pagination count={10} onChange={handlePage} />
+            <Pagination
+              count={Math.ceil(transaction?.length / 10)}
+              onChange={handlePage}
+            />
           </div>
         </div>
       </div>
