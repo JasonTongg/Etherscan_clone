@@ -3,25 +3,61 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f8fa;
+  --foreground: #1a1b41;
+
+  /* Primary Colors */
+  --primary-deep-blue: #1c1f4f;
+  --primary-teal: #1f6b6b;
+
+  /* Accent Colors */
+  --accent-sunset-orange: #ff6f3c;
+  --accent-soft-yellow: #ffd166;
+
+  /* Neutral Colors */
+  --neutral-dark-charcoal: #2d2d2d;
+  --neutral-slate-gray: #5c6f7b;
+  --neutral-light-gray: #e6e6e6;
+
+  /* Status Colors */
+  --status-success-green: #3ba55d;
+  --status-error-red: #e63946;
+
+  /* Typography Colors */
+  --typography-midnight-blue: #1a1b41;
+  --typography-gunmetal: #323840;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.bg-header {
+  background-image: linear-gradient(
+      to right,
+      rgba(28, 27, 65, 0.7),
+      rgba(28, 27, 65, 0.7)
+    ),
+    url("../public/background.jpg");
+  background-position: top;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+.bg-header2 {
+  background-image: linear-gradient(
+      to right,
+      rgba(45, 45, 45, 0.8),
+      rgba(45, 45, 45, 0.8)
+    ),
+    url("../public/background.jpg");
+  background-position: top;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+* {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
