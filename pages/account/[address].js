@@ -75,6 +75,28 @@ export default function AccountDetail() {
   const [token1155TxList, setToken1155TxList] = useState([]);
   const router = useRouter();
   const { address: addressQuery } = router.query;
+  const [search, setSearch] = useState("");
+
+  function checkEthereumInput(input) {
+    // Regular expressions to match Ethereum account addresses and transaction hashes
+    const accountAddressPattern = /^0x[a-fA-F0-9]{40}$/;
+    const transactionHashPattern = /^0x[a-fA-F0-9]{64}$/;
+    const blockNumberPattern = /^\d+$/;
+
+    if (accountAddressPattern.test(input)) {
+      router.push(`/account/${input}`);
+    } else if (transactionHashPattern.test(input)) {
+      router.push(`/transaction/${input}`);
+    } else if (blockNumberPattern.test(+input)) {
+      router.push(`/block/${input}`);
+    }
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("cek " + search);
+    checkEthereumInput(search);
+  };
 
   const apiKey = process.env.ETHERSCAN_KEY;
 
@@ -189,20 +211,27 @@ export default function AccountDetail() {
             <h2 className="text-neutral-lightGray font-medium text-xl">
               The Ethereum Blockchain Explorer
             </h2>
-            <label
-              htmlFor="search"
-              className="bg-neutral-lightGray py-2 px-4 rounded-[10px] flex items-center justify-center gap-2"
-            >
-              <input
-                type="text"
-                id="search"
-                className="bg-transparent outline-none text-xl w-[400px]"
-                placeholder="Search by Address"
-              />
-              <div className="bg-foreground p-2 rounded-[10px]">
-                <IoSearch className="text-neutral-lightGray text-2xl" />
-              </div>
-            </label>
+            <form onSubmit={handleSubmit}>
+              <label
+                htmlFor="search"
+                className="bg-neutral-lightGray py-2 px-4 rounded-[10px] flex items-center justify-center gap-2"
+              >
+                <input
+                  type="text"
+                  id="search"
+                  className="bg-transparent outline-none text-xl w-[400px]"
+                  placeholder="Search by Address"
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="bg-foreground p-2 rounded-[10px] cursor-pointer"
+                  onClick={handleSubmit}
+                >
+                  <IoSearch className="text-neutral-lightGray text-2xl" />
+                </button>
+              </label>
+            </form>
           </div>
           <div className="bg-neutral-lightGray p-4 rounded-[15px] flex items-center justify-center">
             <div className="flex items-center justify-center gap-2 px-3">

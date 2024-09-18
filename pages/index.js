@@ -15,6 +15,7 @@ import { TbWorld } from "react-icons/tb";
 import { PiCubeDuotone } from "react-icons/pi";
 import { FiFileText } from "react-icons/fi";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const projectId = "d4e79a3bc1f5545a422926acb6bb88b8";
 
@@ -66,6 +67,29 @@ export default function Index() {
   const [topTenBlock, setTopTenBlock] = useState([]);
   const [transaction, setTransaction] = useState([]);
   const [gasPrice, setGasPrice] = useState(0);
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+
+  function checkEthereumInput(input) {
+    // Regular expressions to match Ethereum account addresses and transaction hashes
+    const accountAddressPattern = /^0x[a-fA-F0-9]{40}$/;
+    const transactionHashPattern = /^0x[a-fA-F0-9]{64}$/;
+    const blockNumberPattern = /^\d+$/;
+
+    if (accountAddressPattern.test(input)) {
+      router.push(`/account/${input}`);
+    } else if (transactionHashPattern.test(input)) {
+      router.push(`/transaction/${input}`);
+    } else if (blockNumberPattern.test(+input)) {
+      router.push(`/block/${input}`);
+    }
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("cek " + search);
+    checkEthereumInput(search);
+  };
 
   const accountDetails = async () => {
     try {
@@ -176,20 +200,27 @@ export default function Index() {
             <h2 className="text-neutral-lightGray font-medium text-xl">
               The Ethereum Blockchain Explorer
             </h2>
-            <label
-              htmlFor="search"
-              className="bg-neutral-lightGray py-2 px-4 rounded-[10px] flex items-center justify-center gap-2"
-            >
-              <input
-                type="text"
-                id="search"
-                className="bg-transparent outline-none text-xl w-[400px]"
-                placeholder="Search by Address"
-              />
-              <div className="bg-foreground p-2 rounded-[10px]">
-                <IoSearch className="text-neutral-lightGray text-2xl" />
-              </div>
-            </label>
+            <form onSubmit={handleSubmit}>
+              <label
+                htmlFor="search"
+                className="bg-neutral-lightGray py-2 px-4 rounded-[10px] flex items-center justify-center gap-2"
+              >
+                <input
+                  type="text"
+                  id="search"
+                  className="bg-transparent outline-none text-xl w-[400px]"
+                  placeholder="Search by Address"
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="bg-foreground p-2 rounded-[10px] cursor-pointer"
+                  onClick={handleSubmit}
+                >
+                  <IoSearch className="text-neutral-lightGray text-2xl" />
+                </button>
+              </label>
+            </form>
           </div>
           <div className="bg-neutral-lightGray p-4 rounded-[15px] flex items-center justify-center">
             <div className="flex items-center justify-center gap-2 px-3">
@@ -254,7 +285,7 @@ export default function Index() {
               .map((item, index) => (
                 <Link
                   href={`/transaction/${item}`}
-                  className="hover:bg-gray-200 cursor-pointer px-5 grid items-center content-center gap-3 w-full justify-center justify-items-center border-t-[1px] border-gray-300 py-5"
+                  className="hover:bg-gray-200 cursor-pointer px-5 grid items-center content-center gap-3 w-full border-t-[1px] border-gray-300 py-5"
                   style={{ gridTemplateColumns: "auto 1fr" }}
                 >
                   <FiFileText className="text-2xl opacity-80" />

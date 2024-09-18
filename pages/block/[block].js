@@ -84,6 +84,34 @@ export default function BlockDetail() {
   const [tabActive, setTabActive] = useState(0);
   const [expanded, setExpanded] = React.useState(false);
   const [transaction, setTransaction] = useState([]);
+  const [search, setSearch] = useState("");
+
+  function checkEthereumInput(input) {
+    // Regular expressions to match Ethereum account addresses and transaction hashes
+    const accountAddressPattern = /^0x[a-fA-F0-9]{40}$/;
+    const transactionHashPattern = /^0x[a-fA-F0-9]{64}$/;
+    const blockNumberPattern = /^\d+$/;
+    console.log("masuk ga nih?");
+
+    if (accountAddressPattern.test(input)) {
+      console.log("account");
+      router.push(`/account/${input}`);
+    } else if (transactionHashPattern.test(input)) {
+      console.log("hash");
+      router.push(`/transaction/${input}`);
+    } else if (blockNumberPattern.test(+input)) {
+      console.log("block");
+      router.push(`/block/${input}`);
+    } else {
+      console.log("wrong");
+    }
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("cek " + search);
+    checkEthereumInput(search);
+  };
 
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
@@ -97,10 +125,15 @@ export default function BlockDetail() {
         setTenBlockWithDetails(topTenDetails);
         setLatestBlock(latestBlock);
 
-        const blockTransaction = await provider.getBlock(getCurrentBlock);
-        setTransaction(blockTransaction.transactions);
+        const transactionDetails = await Promise.all(
+          topTenDetails.transactions.map(async (txHash) => {
+            const txDetails = await provider.getTransaction(txHash);
+            return txDetails;
+          })
+        );
 
-        console.log(topTenDetails);
+        setTransaction(transactionDetails);
+        console.log(transactionDetails);
       } catch (error) {
         console.log("something went wrong...", error);
       }
@@ -176,20 +209,27 @@ export default function BlockDetail() {
             <h2 className="text-neutral-lightGray font-medium text-xl">
               The Ethereum Blockchain Explorer
             </h2>
-            <label
-              htmlFor="search"
-              className="bg-neutral-lightGray py-2 px-4 rounded-[10px] flex items-center justify-center gap-2"
-            >
-              <input
-                type="text"
-                id="search"
-                className="bg-transparent outline-none text-xl w-[400px]"
-                placeholder="Search by Address"
-              />
-              <div className="bg-foreground p-2 rounded-[10px]">
-                <IoSearch className="text-neutral-lightGray text-2xl" />
-              </div>
-            </label>
+            <form onSubmit={handleSubmit}>
+              <label
+                htmlFor="search"
+                className="bg-neutral-lightGray py-2 px-4 rounded-[10px] flex items-center justify-center gap-2"
+              >
+                <input
+                  type="text"
+                  id="search"
+                  className="bg-transparent outline-none text-xl w-[400px]"
+                  placeholder="Search by Address"
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="bg-foreground p-2 rounded-[10px] cursor-pointer"
+                  onClick={handleSubmit}
+                >
+                  <IoSearch className="text-neutral-lightGray text-2xl" />
+                </button>
+              </label>
+            </form>
           </div>
           <div className="bg-neutral-lightGray p-4 rounded-[15px] flex items-center justify-center">
             <div className="flex items-center justify-center gap-2 px-3">
@@ -349,17 +389,35 @@ export default function BlockDetail() {
             <Accordion
               expanded={expanded === "panel4"}
               onChange={handleChange("panel4")}
+              sx={{
+                backgroundColor: "transparent",
+                padding: 0,
+                borderBottom: 0,
+                boxShadow: 0,
+              }}
             >
               <AccordionSummary
                 expandIcon={<FaAngleDown />}
                 aria-controls="panel4bh-content"
                 id="panel4bh-header"
+                sx={{
+                  backgroundColor: "transparent",
+                  padding: 0,
+                }}
               >
                 <Typography sx={{ width: "33%", flexShrink: 0 }}>
                   Click to show more
                 </Typography>
               </AccordionSummary>
-              <AccordionDetails>
+              <AccordionDetails
+                sx={{
+                  backgroundColor: "transparent",
+                  padding: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                }}
+              >
                 <div
                   className="grid"
                   style={{ gridTemplateColumns: "300px 1fr" }}
@@ -399,8 +457,84 @@ export default function BlockDetail() {
             </Accordion>
           </div>
         ) : (
-          <div className="flex flex-col gap-4 shadow-xl overflow-hidden rounded-[15px] p-8 my-5 mx-auto w-[95vw]">
-            Transaction
+          <div className="w-[95vw]">
+            <div className="shadow-xl rounded-[15px] overflow-hidden">
+              <div className="flex flex-col gap-3 w-full px-5 pb-5 mt-4">
+                <div
+                  className="grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
+                  style={{
+                    gridTemplateColumns: "auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr",
+                  }}
+                >
+                  <FiFileText className="text-3xl opacity-80" />
+                  <p className="text-base font-bold">Transaction Hash</p>
+                  <p className="text-base font-bold">Method Hash</p>
+                  <p className="text-base font-bold">Block</p>
+                  <p className="text-base font-bold">From</p>
+                  <p className="text-base font-bold">To</p>
+                  <p className="text-base font-bold">Amount (ETH)</p>
+                  <p className="text-base font-bold">Txn Fee (ETH)</p>
+                </div>
+                {transaction
+                  .filter(
+                    (_, index) =>
+                      index >= startIndex && index <= startIndex + 10
+                  )
+                  ?.map((txDetails, index) => (
+                    <div
+                      key={index}
+                      className="[&>*]:break-all grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
+                      style={{
+                        gridTemplateColumns: "auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr",
+                      }}
+                    >
+                      <FiFileText className="text-3xl opacity-80" />
+                      <Link
+                        href={`/transaction/${txDetails?.hash}`}
+                        className="cursor-pointer"
+                      >
+                        {txDetails.hash.substring(0, 5)}...
+                        {txDetails.hash.substr(txDetails.hash.length - 5)}
+                      </Link>
+                      <p> {txDetails.data.slice(0, 10)} </p>
+                      <Link
+                        href={`/block/${txDetails?.blockNumber}`}
+                        className="cursor-pointer"
+                      >
+                        {txDetails.blockNumber}
+                      </Link>
+                      <p>
+                        {txDetails.from.substring(0, 5)}...
+                        {txDetails.from.substr(txDetails.from.length - 5)}
+                      </p>
+                      <p>
+                        {txDetails.to?.substring(0, 5)}...
+                        {txDetails.to?.substr(txDetails.to.length - 5) ||
+                          "Contract Interaction"}
+                      </p>
+                      <p>
+                        {ethers.formatEther(txDetails.value).length > 10 ||
+                        ethers.formatEther(txDetails.value) === "0.0"
+                          ? 0
+                          : ethers.formatEther(txDetails.value)}{" "}
+                        ETH
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {ethers
+                          .formatEther(txDetails.gasPrice)
+                          .substring(0, 13)}{" "}
+                        ETH
+                      </p>
+                    </div>
+                  ))}
+              </div>
+              <div className="w-full flex items-center justify-center my-4">
+                <Pagination
+                  count={Math.ceil(transaction?.length / 10)}
+                  onChange={handlePage}
+                />
+              </div>
+            </div>
           </div>
         )
       ) : (
