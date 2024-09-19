@@ -189,7 +189,7 @@ export default function Blocks() {
         connectWallet={connectEthereumWallet}
       />
       <div className="bg-header p-8 w-full">
-        <div className="flex items-center justify-center gap-8">
+        <div className="flex items-center justify-center gap-8 flex-col xl:flex-row">
           <div className="p-4 rounded-[15px] flex flex-col gap-3">
             <h2 className="text-neutral-lightGray font-medium text-xl">
               The Ethereum Blockchain Explorer
@@ -202,7 +202,7 @@ export default function Blocks() {
                 <input
                   type="text"
                   id="search"
-                  className="bg-transparent outline-none text-xl w-[400px]"
+                  className="bg-transparent outline-none text-xl w-[80vw] sm:w-[400px]"
                   placeholder="Search by Address"
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -216,15 +216,15 @@ export default function Blocks() {
               </label>
             </form>
           </div>
-          <div className="bg-neutral-lightGray p-4 rounded-[15px] flex items-center justify-center">
-            <div className="flex items-center justify-center gap-2 px-3">
+          <div className="bg-neutral-lightGray xs:gap-0 gap-3 p-4 rounded-[15px] flex-col xs:flex-row flex xs:items-center justify-center">
+            <div className="flex items-center xs:justify-center gap-2 px-3">
               <FaEthereum className="text-3xl"></FaEthereum>
               <div className="flex justify-center flex-col">
                 <p>Eth Price</p>
                 <p>${price?.data?.result?.ethusd}</p>
               </div>
             </div>
-            <div className="flex items-center justify-center gap-2 px-3 border-l-[1px] border-l-neutral-darkCharcoal">
+            <div className="flex items-center xs:justify-center gap-2 px-3 border-l-[1px] xs:border-l-neutral-darkCharcoal">
               <TbWorld className="text-3xl"></TbWorld>
               <div className="flex justify-center flex-col">
                 <p>Eth Supply</p>

@@ -194,7 +194,7 @@ export default function Transactions() {
         connectWallet={connectEthereumWallet}
       />
       <div className="bg-header p-8 w-full">
-        <div className="flex items-center justify-center gap-8">
+        <div className="flex items-center justify-center gap-8 flex-col xl:flex-row">
           <div className="p-4 rounded-[15px] flex flex-col gap-3">
             <h2 className="text-neutral-lightGray font-medium text-xl">
               The Ethereum Blockchain Explorer
@@ -207,7 +207,7 @@ export default function Transactions() {
                 <input
                   type="text"
                   id="search"
-                  className="bg-transparent outline-none text-xl w-[400px]"
+                  className="bg-transparent outline-none text-xl w-[80vw] sm:w-[400px]"
                   placeholder="Search by Address"
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -221,15 +221,15 @@ export default function Transactions() {
               </label>
             </form>
           </div>
-          <div className="bg-neutral-lightGray p-4 rounded-[15px] flex items-center justify-center">
-            <div className="flex items-center justify-center gap-2 px-3">
+          <div className="bg-neutral-lightGray xs:gap-0 gap-3 p-4 rounded-[15px] flex-col xs:flex-row flex xs:items-center justify-center">
+            <div className="flex items-center xs:justify-center gap-2 px-3">
               <FaEthereum className="text-3xl"></FaEthereum>
               <div className="flex justify-center flex-col">
                 <p>Eth Price</p>
                 <p>${price?.data?.result?.ethusd}</p>
               </div>
             </div>
-            <div className="flex items-center justify-center gap-2 px-3 border-l-[1px] border-l-neutral-darkCharcoal">
+            <div className="flex items-center xs:justify-center gap-2 px-3 border-l-[1px] xs:border-l-neutral-darkCharcoal">
               <TbWorld className="text-3xl"></TbWorld>
               <div className="flex justify-center flex-col">
                 <p>Eth Supply</p>
@@ -242,13 +242,13 @@ export default function Transactions() {
       {transactionDetail && transactionReceipt && block ? (
         <div className="flex flex-col">
           <div className="flex flex-col gap-4 shadow-xl overflow-hidden rounded-[15px] p-8 my-5 mx-auto w-[95vw]">
-            <div className="grid" style={{ gridTemplateColumns: "300px 1fr" }}>
+            <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">Transaction Hash:</p>
               <div className="flex gap-2 items-center">
-                <p>{transactionDetail?.hash}</p>
+                <p className="break-all">{transactionDetail?.hash}</p>
               </div>
             </div>
-            <div className="grid" style={{ gridTemplateColumns: "300px 1fr" }}>
+            <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">Status:</p>
               <p>
                 {transactionReceipt?.status === 1 ? (
@@ -264,29 +264,29 @@ export default function Transactions() {
                 )}
               </p>
             </div>
-            <div className="grid" style={{ gridTemplateColumns: "300px 1fr" }}>
+            <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">Block:</p>
               <p className="text-primary-deepBlue cursor-pointer font-medium">
                 {transactionDetail?.blockNumber}
               </p>
             </div>
-            <div className="grid" style={{ gridTemplateColumns: "300px 1fr" }}>
+            <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">Timestamp:</p>
               <p className="text-primary-deepBlue cursor-pointer font-medium">
                 {timeAgoFromTimestamp(block?.timestamp)}
               </p>
             </div>
             <div className="my-[.5rem] w-[full] h-[1px] bg-gray-200"></div>
-            <div className="grid" style={{ gridTemplateColumns: "300px 1fr" }}>
+            <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">From:</p>
-              <p>{transactionDetail?.from}</p>
+              <p className="break-all">{transactionDetail?.from}</p>
             </div>
-            <div className="grid" style={{ gridTemplateColumns: "300px 1fr" }}>
+            <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">To:</p>
-              <p>{transactionDetail?.to}</p>
+              <p className="break-all">{transactionDetail?.to}</p>
             </div>
             <div className="my-[.5rem] w-[full] h-[1px] bg-gray-200"></div>
-            <div className="grid" style={{ gridTemplateColumns: "300px 1fr" }}>
+            <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">Transaction Fee:</p>
               <div className="flex gap-2 items-center">
                 <p>
@@ -301,7 +301,7 @@ export default function Transactions() {
                 </p>
               </div>
             </div>
-            <div className="grid" style={{ gridTemplateColumns: "300px 1fr" }}>
+            <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">Gas Price:</p>
               <p>
                 {transactionDetail?.gasPrice
@@ -344,10 +344,7 @@ export default function Transactions() {
                   gap: "1rem",
                 }}
               >
-                <div
-                  className="grid"
-                  style={{ gridTemplateColumns: "300px 1fr" }}
-                >
+                <div className="grid" transactionDetailGrid>
                   <p className="text-[1.1rem] text-gray-600">
                     Gas Limit & Usage by Txn:
                   </p>
@@ -368,10 +365,7 @@ export default function Transactions() {
                     </p>
                   </div>
                 </div>
-                <div
-                  className="grid"
-                  style={{ gridTemplateColumns: "300px 1fr" }}
-                >
+                <div className="grid" transactionDetailGrid>
                   <p className="text-[1.1rem] text-gray-600">Gas Fees:</p>
                   <p>
                     <span className="text-[1rem] text-gray-600">Base:</span>{" "}
@@ -381,10 +375,7 @@ export default function Transactions() {
                       : "Loading..."}
                   </p>
                 </div>
-                <div
-                  className="grid"
-                  style={{ gridTemplateColumns: "300px 1fr" }}
-                >
+                <div className="grid" transactionDetailGrid>
                   <p className="text-[1.1rem] text-gray-600">Burnt Fee:</p>
                   <div className=" w-fit px-2 py-1 rounded-[5px] bg-gray-100 border-[2px] border-gray-300 flex items-center gap-2">
                     <BsFire className="text-orange-500" />
@@ -401,32 +392,26 @@ export default function Transactions() {
                   </div>
                 </div>
                 <div className="my-[.5rem] w-[full] h-[1px] bg-gray-200"></div>
-                <div
-                  className="grid"
-                  style={{ gridTemplateColumns: "300px 1fr" }}
-                >
+                <div className="grid" transactionDetailGrid>
                   <p className="text-[1.1rem] text-gray-600">
                     Other Attributes:
                   </p>
-                  <div className="flex items-center gap-2">
-                    <div className=" w-fit px-2 py-1 rounded-[5px] bg-gray-100 border-[2px] border-gray-300 flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className=" w-fit px-2 py-1 rounded-[5px] min-w-[100px] bg-gray-100 border-[2px] border-gray-300 flex items-center gap-2">
                       <p>Txn Type:</p>
                       <p>{transactionReceipt?.type}</p>
                     </div>
-                    <div className=" w-fit px-2 py-1 rounded-[5px] bg-gray-100 border-[2px] border-gray-300 flex items-center gap-2">
+                    <div className=" w-fit px-2 py-1 rounded-[5px] min-w-[100px] bg-gray-100 border-[2px] border-gray-300 flex items-center gap-2">
                       <p>Nonce:</p>
                       <p>{transactionDetail?.nonce}</p>
                     </div>
-                    <div className=" w-fit px-2 py-1 rounded-[5px] bg-gray-100 border-[2px] border-gray-300 flex items-center gap-2">
+                    <div className=" w-fit px-2 py-1 rounded-[5px] min-w-[100px]min-w-[100px] bg-gray-100 border-[2px] border-gray-300 flex items-center gap-2">
                       <p>Position in Block:</p>
                       <p>{transactionDetail?.index}</p>
                     </div>
                   </div>
                 </div>
-                <div
-                  className="grid"
-                  style={{ gridTemplateColumns: "300px 1fr" }}
-                >
+                <div className="grid" transactionDetailGrid>
                   <p className="text-[1.1rem] text-gray-600">Input Data:</p>
                   <textarea
                     className="resize-none bg-gray-100 border-[2px] border-gray-300 p-2 rounded-[5px]"

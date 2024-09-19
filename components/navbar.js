@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function navbar({ isConnected, address, connectWallet }) {
   return (
-    <div className="bg-header2 flex items-center justify-between w-full px-20 gap-5 py-5">
+    <div className="bg-header2 flex items-center justify-between w-full px-8 sm:px-20 gap-5 py-5">
       <Link
         href="/"
         className="flex items-center justify-center gap-3 [&>*]:text-neutral-lightGray"

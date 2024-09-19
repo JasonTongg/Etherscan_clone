@@ -194,8 +194,8 @@ export default function Index() {
         address={address}
         connectWallet={connectEthereumWallet}
       />
-      <div className="bg-header p-8">
-        <div className="flex items-center justify-center gap-8">
+      <div className="bg-header p-8 w-full">
+        <div className="flex items-center justify-center gap-8 flex-col xl:flex-row">
           <div className="p-4 rounded-[15px] flex flex-col gap-3">
             <h2 className="text-neutral-lightGray font-medium text-xl">
               The Ethereum Blockchain Explorer
@@ -208,7 +208,7 @@ export default function Index() {
                 <input
                   type="text"
                   id="search"
-                  className="bg-transparent outline-none text-xl w-[400px]"
+                  className="bg-transparent outline-none text-xl w-[80vw] sm:w-[400px]"
                   placeholder="Search by Address"
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -222,15 +222,15 @@ export default function Index() {
               </label>
             </form>
           </div>
-          <div className="bg-neutral-lightGray p-4 rounded-[15px] flex items-center justify-center">
-            <div className="flex items-center justify-center gap-2 px-3">
+          <div className="bg-neutral-lightGray xs:gap-0 gap-3 p-4 rounded-[15px] flex-col xs:flex-row flex xs:items-center justify-center">
+            <div className="flex items-center xs:justify-center gap-2 px-3">
               <FaEthereum className="text-3xl"></FaEthereum>
               <div className="flex justify-center flex-col">
                 <p>Eth Price</p>
                 <p>${price?.data?.result?.ethusd}</p>
               </div>
             </div>
-            <div className="flex items-center justify-center gap-2 px-3 border-l-[1px] border-l-neutral-darkCharcoal">
+            <div className="flex items-center xs:justify-center gap-2 px-3 border-l-[1px] xs:border-l-neutral-darkCharcoal">
               <TbWorld className="text-3xl"></TbWorld>
               <div className="flex justify-center flex-col">
                 <p>Eth Supply</p>
@@ -240,7 +240,7 @@ export default function Index() {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 justify-center gap-5 p-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 justify-center gap-5 p-8">
         <div className="shadow-xl rounded-[15px]  overflow-hidden">
           <p className="font-bold px-5 pt-5 mb-2">Latest Block</p>
           <div className="flex flex-col w-full overflow-auto h-[500px]">
