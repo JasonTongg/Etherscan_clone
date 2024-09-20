@@ -238,14 +238,26 @@ export default function AccountDetail() {
               <FaEthereum className="text-3xl"></FaEthereum>
               <div className="flex justify-center flex-col">
                 <p>Eth Price</p>
-                <p>${price?.data?.result?.ethusd}</p>
+                {price?.data?.result?.ethusd ? (
+                  <p>${price?.data?.result?.ethusd}</p>
+                ) : (
+                  <div class="animate-pulse">
+                    <div class="h-3 w-[200px] bg-slate-300 rounded"></div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex items-center xs:justify-center gap-2 px-3 border-l-[1px] xs:border-l-neutral-darkCharcoal">
               <TbWorld className="text-3xl"></TbWorld>
               <div className="flex justify-center flex-col">
                 <p>Eth Supply</p>
-                <p>{supply.data?.result}</p>
+                {supply?.data?.result ? (
+                  <p>{supply.data?.result}</p>
+                ) : (
+                  <div class="animate-pulse">
+                    <div class="h-3 w-[250px] bg-slate-300 rounded"></div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -257,24 +269,64 @@ export default function AccountDetail() {
         <p>Transaction</p>
         {txList?.map((item, index) => (
           <div key={index}>
-            <p>hash: {item.hash}</p>
-            <p>Block: {item.blockNumber}</p>
+            <Link
+              href={`/transaction/${item?.hash}`}
+              className="text-primary-deepBlue cursor-pointer font-medium"
+            >
+              hash: {item.hash}
+            </Link>
+            <Link
+              href={`/block/${item?.blockNumber}`}
+              className="text-primary-deepBlue cursor-pointer font-medium"
+            >
+              Block: {item.blockNumber}
+            </Link>
             <p>Timestamp: {timeAgoFromTimestamp(item.timeStamp)}</p>
-            <p>From: {item.from}</p>
+            <Link
+              href={`/account/${item?.from}`}
+              className="text-primary-deepBlue cursor-pointer font-medium"
+            >
+              From: {item.from}
+            </Link>
             <p>{addressQuery.toLowerCase() === item.from ? "OUT" : "IN"}</p>
-            <p>To: {item.to}</p>
+            <Link
+              href={`/account/${item?.to}`}
+              className="text-primary-deepBlue cursor-pointer font-medium"
+            >
+              To: {item.to}
+            </Link>
             <p>Amount: {item.value}</p>
           </div>
         ))}
         <p>Internal Transaction</p>
         {internalTxList?.map((item, index) => (
           <div key={index}>
-            <p>hash: {item.hash}</p>
-            <p>Block: {item.blockNumber}</p>
+            <Link
+              href={`/transaction/${item?.hash}`}
+              className="text-primary-deepBlue cursor-pointer font-medium"
+            >
+              hash: {item.hash}
+            </Link>
+            <Link
+              href={`/block/${item?.blockNumber}`}
+              className="text-primary-deepBlue cursor-pointer font-medium"
+            >
+              Block: {item.blockNumber}
+            </Link>
             <p>Timestamp: {timeAgoFromTimestamp(item.timeStamp)}</p>
-            <p>From: {item.from}</p>
+            <Link
+              href={`/account/${item?.from}`}
+              className="text-primary-deepBlue cursor-pointer font-medium"
+            >
+              From: {item.from}
+            </Link>
             <p>{addressQuery.toLowerCase() === item.from ? "OUT" : "IN"}</p>
-            <p>To: {item.to}</p>
+            <Link
+              href={`/account/${item?.to}`}
+              className="text-primary-deepBlue cursor-pointer font-medium"
+            >
+              To: {item.to}
+            </Link>
             <p>Amount: {item.value}</p>
             <p>Txn Fee: {item.gasPrice * item.gasUsed}</p>
           </div>

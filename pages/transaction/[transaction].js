@@ -226,14 +226,26 @@ export default function Transactions() {
               <FaEthereum className="text-3xl"></FaEthereum>
               <div className="flex justify-center flex-col">
                 <p>Eth Price</p>
-                <p>${price?.data?.result?.ethusd}</p>
+                {price?.data?.result?.ethusd ? (
+                  <p>${price?.data?.result?.ethusd}</p>
+                ) : (
+                  <div class="animate-pulse">
+                    <div class="h-3 w-[200px] bg-slate-300 rounded"></div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex items-center xs:justify-center gap-2 px-3 border-l-[1px] xs:border-l-neutral-darkCharcoal">
               <TbWorld className="text-3xl"></TbWorld>
               <div className="flex justify-center flex-col">
                 <p>Eth Supply</p>
-                <p>{supply.data?.result}</p>
+                {supply?.data?.result ? (
+                  <p>{supply.data?.result}</p>
+                ) : (
+                  <div class="animate-pulse">
+                    <div class="h-3 w-[250px] bg-slate-300 rounded"></div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -245,7 +257,12 @@ export default function Transactions() {
             <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">Transaction Hash:</p>
               <div className="flex gap-2 items-center">
-                <p className="break-all">{transactionDetail?.hash}</p>
+                <Link
+                  href={`/transaction/transactionDetail?.hash`}
+                  className="text-primary-deepBlue cursor-pointer font-medium break-all"
+                >
+                  {transactionDetail?.hash}
+                </Link>
               </div>
             </div>
             <div className="grid transactionDetailGrid">
@@ -266,9 +283,12 @@ export default function Transactions() {
             </div>
             <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">Block:</p>
-              <p className="text-primary-deepBlue cursor-pointer font-medium">
+              <Link
+                href={`/block/${transactionDetail?.blockNumber}`}
+                className="text-primary-deepBlue cursor-pointer font-medium"
+              >
                 {transactionDetail?.blockNumber}
-              </p>
+              </Link>
             </div>
             <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">Timestamp:</p>
@@ -279,11 +299,21 @@ export default function Transactions() {
             <div className="my-[.5rem] w-[full] h-[1px] bg-gray-200"></div>
             <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">From:</p>
-              <p className="break-all">{transactionDetail?.from}</p>
+              <Link
+                href={`/account/${transactionDetail?.from}`}
+                className="text-primary-deepBlue cursor-pointer font-medium break-all"
+              >
+                {transactionDetail?.from}
+              </Link>
             </div>
             <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">To:</p>
-              <p className="break-all">{transactionDetail?.to}</p>
+              <Link
+                href={`/account/${transactionDetail?.to}`}
+                className="text-primary-deepBlue cursor-pointer font-medium break-all"
+              >
+                {transactionDetail?.to}
+              </Link>
             </div>
             <div className="my-[.5rem] w-[full] h-[1px] bg-gray-200"></div>
             <div className="grid transactionDetailGrid">
@@ -344,7 +374,7 @@ export default function Transactions() {
                   gap: "1rem",
                 }}
               >
-                <div className="grid" transactionDetailGrid>
+                <div className="grid transactionDetailGrid">
                   <p className="text-[1.1rem] text-gray-600">
                     Gas Limit & Usage by Txn:
                   </p>
@@ -365,7 +395,7 @@ export default function Transactions() {
                     </p>
                   </div>
                 </div>
-                <div className="grid" transactionDetailGrid>
+                <div className="grid transactionDetailGrid">
                   <p className="text-[1.1rem] text-gray-600">Gas Fees:</p>
                   <p>
                     <span className="text-[1rem] text-gray-600">Base:</span>{" "}
@@ -375,7 +405,7 @@ export default function Transactions() {
                       : "Loading..."}
                   </p>
                 </div>
-                <div className="grid" transactionDetailGrid>
+                <div className="grid transactionDetailGrid">
                   <p className="text-[1.1rem] text-gray-600">Burnt Fee:</p>
                   <div className=" w-fit px-2 py-1 rounded-[5px] bg-gray-100 border-[2px] border-gray-300 flex items-center gap-2">
                     <BsFire className="text-orange-500" />
@@ -392,7 +422,7 @@ export default function Transactions() {
                   </div>
                 </div>
                 <div className="my-[.5rem] w-[full] h-[1px] bg-gray-200"></div>
-                <div className="grid" transactionDetailGrid>
+                <div className="grid transactionDetailGrid">
                   <p className="text-[1.1rem] text-gray-600">
                     Other Attributes:
                   </p>
@@ -411,7 +441,7 @@ export default function Transactions() {
                     </div>
                   </div>
                 </div>
-                <div className="grid" transactionDetailGrid>
+                <div className="grid transactionDetailGrid">
                   <p className="text-[1.1rem] text-gray-600">Input Data:</p>
                   <textarea
                     className="resize-none bg-gray-100 border-[2px] border-gray-300 p-2 rounded-[5px]"
@@ -425,7 +455,9 @@ export default function Transactions() {
           </div>
         </div>
       ) : (
-        <p>Loading...</p>
+        <div class="animate-pulse mt-4">
+          <div class="h-[600px] w-full bg-slate-300 rounded"></div>
+        </div>
       )}
     </div>
   );

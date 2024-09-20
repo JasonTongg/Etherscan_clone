@@ -227,14 +227,26 @@ export default function Index() {
               <FaEthereum className="text-3xl"></FaEthereum>
               <div className="flex justify-center flex-col">
                 <p>Eth Price</p>
-                <p>${price?.data?.result?.ethusd}</p>
+                {price?.data?.result?.ethusd ? (
+                  <p>${price?.data?.result?.ethusd}</p>
+                ) : (
+                  <div class="animate-pulse">
+                    <div class="h-3 w-[200px] bg-slate-300 rounded"></div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex items-center xs:justify-center gap-2 px-3 border-l-[1px] xs:border-l-neutral-darkCharcoal">
               <TbWorld className="text-3xl"></TbWorld>
               <div className="flex justify-center flex-col">
                 <p>Eth Supply</p>
-                <p>{supply.data?.result}</p>
+                {supply?.data?.result ? (
+                  <p>{supply.data?.result}</p>
+                ) : (
+                  <div class="animate-pulse">
+                    <div class="h-3 w-[250px] bg-slate-300 rounded"></div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -243,33 +255,40 @@ export default function Index() {
       <div className="grid grid-cols-1 md:grid-cols-2 justify-center gap-5 p-8">
         <div className="shadow-xl rounded-[15px]  overflow-hidden">
           <p className="font-bold px-5 pt-5 mb-2">Latest Block</p>
-          <div className="flex flex-col w-full overflow-auto h-[500px]">
-            {tenBlockWithDetails?.map((item, index) => (
-              <Link
-                href={`block/${item.number}`}
-                key={index}
-                className="hover:bg-gray-200 cursor-pointer grid px-5 items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 py-2"
-                style={{ gridTemplateColumns: "auto 120px 1fr" }}
-              >
-                <PiCubeDuotone className="text-3xl opacity-80" />
-                <div>
-                  <p className="text-md">{item.number}</p>
-                  <p className="text-xs">
-                    {timeAgoFromTimestamp(item.timestamp)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-md">
-                    Fee Recipient {item.miner.substring(0, 8)}...
-                    {item.miner.substr(item.miner.length - 8)}
-                  </p>
-                  <p className="text-xs">
-                    {item.transactions.length} Transactions
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {tenBlockWithDetails?.length > 0 ? (
+            <div className="flex flex-col w-full overflow-auto h-[500px]">
+              {tenBlockWithDetails?.map((item, index) => (
+                <Link
+                  href={`block/${item.number}`}
+                  key={index}
+                  className="hover:bg-gray-200 cursor-pointer grid px-5 items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 py-2"
+                  style={{ gridTemplateColumns: "auto 120px 1fr" }}
+                >
+                  <PiCubeDuotone className="text-3xl opacity-80" />
+                  <div>
+                    <p className="text-md">{item.number}</p>
+                    <p className="text-xs">
+                      {timeAgoFromTimestamp(item.timestamp)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-md">
+                      Fee Recipient {item.miner.substring(0, 8)}...
+                      {item.miner.substr(item.miner.length - 8)}
+                    </p>
+                    <p className="text-xs">
+                      {item.transactions.length} Transactions
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div class="animate-pulse">
+              <div class="h-[500px] w-full bg-slate-300 rounded"></div>
+            </div>
+          )}
+
           <Link
             href="/block"
             className="block text-center w-full p-5 bg-gray-200"
@@ -279,22 +298,28 @@ export default function Index() {
         </div>
         <div className="shadow-xl rounded-[15px]  overflow-hidden">
           <p className="font-bold px-5 pt-5 mb-2">Latest Transaction</p>
-          <div className="flex flex-col shadow-xl pb-5 w-full overflow-auto h-[500px]">
-            {transaction
-              .filter((_, index) => index < 10)
-              .map((item, index) => (
-                <Link
-                  href={`/transaction/${item}`}
-                  className="hover:bg-gray-200 cursor-pointer px-5 grid items-center content-center gap-3 w-full border-t-[1px] border-gray-300 py-5"
-                  style={{ gridTemplateColumns: "auto 1fr" }}
-                >
-                  <FiFileText className="text-2xl opacity-80" />
-                  <p key={index} className="break-all text-md">
-                    {item}
-                  </p>
-                </Link>
-              ))}
-          </div>
+          {transaction?.length > 0 ? (
+            <div className="flex flex-col shadow-xl pb-5 w-full overflow-auto h-[500px]">
+              {transaction
+                .filter((_, index) => index < 10)
+                .map((item, index) => (
+                  <Link
+                    href={`/transaction/${item}`}
+                    className="hover:bg-gray-200 cursor-pointer px-5 grid items-center content-center gap-3 w-full border-t-[1px] border-gray-300 py-5"
+                    style={{ gridTemplateColumns: "auto 1fr" }}
+                  >
+                    <FiFileText className="text-2xl opacity-80" />
+                    <p key={index} className="break-all text-md">
+                      {item}
+                    </p>
+                  </Link>
+                ))}
+            </div>
+          ) : (
+            <div class="animate-pulse">
+              <div class="h-[500px] w-full bg-slate-300 rounded"></div>
+            </div>
+          )}
           <Link
             href="/transaction"
             className="text-center block w-full p-5 bg-gray-200"

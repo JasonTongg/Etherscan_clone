@@ -236,14 +236,26 @@ export default function BlockDetail() {
               <FaEthereum className="text-3xl"></FaEthereum>
               <div className="flex justify-center flex-col">
                 <p>Eth Price</p>
-                <p>${price?.data?.result?.ethusd}</p>
+                {price?.data?.result?.ethusd ? (
+                  <p>${price?.data?.result?.ethusd}</p>
+                ) : (
+                  <div class="animate-pulse">
+                    <div class="h-3 w-[200px] bg-slate-300 rounded"></div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex items-center xs:justify-center gap-2 px-3 border-l-[1px] xs:border-l-neutral-darkCharcoal">
               <TbWorld className="text-3xl"></TbWorld>
               <div className="flex justify-center flex-col">
                 <p>Eth Supply</p>
-                <p>{supply.data?.result}</p>
+                {supply?.data?.result ? (
+                  <p>{supply.data?.result}</p>
+                ) : (
+                  <div class="animate-pulse">
+                    <div class="h-3 w-[250px] bg-slate-300 rounded"></div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -327,7 +339,10 @@ export default function BlockDetail() {
             </div>
             <div className="grid transactionDetailGrid">
               <p className="text-[1.1rem] text-gray-600">Transactions:</p>
-              <p className="text-primary-deepBlue cursor-pointer font-medium">
+              <p
+                onClick={() => setTabActive(1)}
+                className="text-primary-deepBlue cursor-pointer font-medium"
+              >
                 {tenBlockWithDetails?.transactions?.length} transactions
               </p>
             </div>
@@ -444,88 +459,105 @@ export default function BlockDetail() {
             </Accordion>
           </div>
         ) : (
-          <div className="w-[95vw]">
-            <div className="shadow-xl rounded-[15px] overflow-hidden">
-              <div className="flex flex-col gap-3 w-full px-5 pb-5 mt-4">
-                <div
-                  className="grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
-                  style={{
-                    gridTemplateColumns: "auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr",
-                  }}
-                >
-                  <FiFileText className="text-3xl opacity-80" />
-                  <p className="text-base font-bold">Transaction Hash</p>
-                  <p className="text-base font-bold">Method Hash</p>
-                  <p className="text-base font-bold">Block</p>
-                  <p className="text-base font-bold">From</p>
-                  <p className="text-base font-bold">To</p>
-                  <p className="text-base font-bold">Amount (ETH)</p>
-                  <p className="text-base font-bold">Txn Fee (ETH)</p>
+          <div className="w-[95vw] overflow-auto">
+            <div className="shadow-xl min-w-[1100px] rounded-[15px] overflow-hidden">
+              {transaction?.length > 0 ? (
+                <div className="flex flex-col gap-3 w-full px-5 pb-5 mt-4">
+                  <div
+                    className="grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
+                    style={{
+                      gridTemplateColumns: "auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr",
+                    }}
+                  >
+                    <FiFileText className="text-3xl opacity-80" />
+                    <p className="text-base font-bold">Transaction Hash</p>
+                    <p className="text-base font-bold">Method Hash</p>
+                    <p className="text-base font-bold">Block</p>
+                    <p className="text-base font-bold">From</p>
+                    <p className="text-base font-bold">To</p>
+                    <p className="text-base font-bold">Amount (ETH)</p>
+                    <p className="text-base font-bold">Txn Fee (ETH)</p>
+                  </div>
+                  {transaction
+                    .filter(
+                      (_, index) =>
+                        index >= startIndex && index <= startIndex + 10
+                    )
+                    ?.map((txDetails, index) => (
+                      <div
+                        key={index}
+                        className="[&>*]:break-all grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
+                        style={{
+                          gridTemplateColumns:
+                            "auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr",
+                        }}
+                      >
+                        <FiFileText className="text-3xl opacity-80" />
+                        <Link
+                          href={`/transaction/${txDetails?.hash}`}
+                          className="text-primary-deepBlue cursor-pointer font-medium"
+                        >
+                          {txDetails.hash.substring(0, 5)}...
+                          {txDetails.hash.substr(txDetails.hash.length - 5)}
+                        </Link>
+                        <p> {txDetails.data.slice(0, 10)} </p>
+                        <Link
+                          href={`/block/${txDetails?.blockNumber}`}
+                          className="text-primary-deepBlue cursor-pointer font-medium"
+                        >
+                          {txDetails.blockNumber}
+                        </Link>
+                        <Link
+                          href={`/account/${txDetails?.from}`}
+                          className="text-primary-deepBlue cursor-pointer font-medium"
+                        >
+                          {txDetails.from.substring(0, 5)}...
+                          {txDetails.from.substr(txDetails.from.length - 5)}
+                        </Link>
+                        <Link
+                          href={`/account/${txDetails?.to}`}
+                          className="text-primary-deepBlue cursor-pointer font-medium"
+                        >
+                          {txDetails.to?.substring(0, 5)}...
+                          {txDetails.to?.substr(txDetails.to.length - 5) ||
+                            "Contract Interaction"}
+                        </Link>
+                        <p>
+                          {ethers.formatEther(txDetails.value).length > 10 ||
+                          ethers.formatEther(txDetails.value) === "0.0"
+                            ? 0
+                            : ethers.formatEther(txDetails.value)}{" "}
+                          ETH
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {ethers
+                            .formatEther(txDetails.gasPrice)
+                            .substring(0, 13)}{" "}
+                          ETH
+                        </p>
+                      </div>
+                    ))}
                 </div>
-                {transaction
-                  .filter(
-                    (_, index) =>
-                      index >= startIndex && index <= startIndex + 10
-                  )
-                  ?.map((txDetails, index) => (
-                    <div
-                      key={index}
-                      className="[&>*]:break-all grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
-                      style={{
-                        gridTemplateColumns: "auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr",
-                      }}
-                    >
-                      <FiFileText className="text-3xl opacity-80" />
-                      <Link
-                        href={`/transaction/${txDetails?.hash}`}
-                        className="cursor-pointer"
-                      >
-                        {txDetails.hash.substring(0, 5)}...
-                        {txDetails.hash.substr(txDetails.hash.length - 5)}
-                      </Link>
-                      <p> {txDetails.data.slice(0, 10)} </p>
-                      <Link
-                        href={`/block/${txDetails?.blockNumber}`}
-                        className="cursor-pointer"
-                      >
-                        {txDetails.blockNumber}
-                      </Link>
-                      <p>
-                        {txDetails.from.substring(0, 5)}...
-                        {txDetails.from.substr(txDetails.from.length - 5)}
-                      </p>
-                      <p>
-                        {txDetails.to?.substring(0, 5)}...
-                        {txDetails.to?.substr(txDetails.to.length - 5) ||
-                          "Contract Interaction"}
-                      </p>
-                      <p>
-                        {ethers.formatEther(txDetails.value).length > 10 ||
-                        ethers.formatEther(txDetails.value) === "0.0"
-                          ? 0
-                          : ethers.formatEther(txDetails.value)}{" "}
-                        ETH
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {ethers
-                          .formatEther(txDetails.gasPrice)
-                          .substring(0, 13)}{" "}
-                        ETH
-                      </p>
-                    </div>
-                  ))}
-              </div>
-              <div className="w-full flex items-center justify-center my-4">
-                <Pagination
-                  count={Math.ceil(transaction?.length / 10)}
-                  onChange={handlePage}
-                />
-              </div>
+              ) : (
+                <div class="animate-pulse mt-4">
+                  <div class="h-[652px] w-full bg-slate-300 rounded"></div>
+                </div>
+              )}
+            </div>
+            <div className="w-full flex items-center justify-center my-4">
+              <Pagination
+                count={Math.ceil(
+                  transaction?.length ? transaction?.length / 10 : 10
+                )}
+                onChange={handlePage}
+              />
             </div>
           </div>
         )
       ) : (
-        "Loading..."
+        <div class="animate-pulse mt-4">
+          <div class="h-[600px] w-full bg-slate-300 rounded"></div>
+        </div>
       )}
     </div>
   );

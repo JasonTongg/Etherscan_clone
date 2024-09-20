@@ -221,105 +221,126 @@ export default function Blocks() {
               <FaEthereum className="text-3xl"></FaEthereum>
               <div className="flex justify-center flex-col">
                 <p>Eth Price</p>
-                <p>${price?.data?.result?.ethusd}</p>
+                {price?.data?.result?.ethusd ? (
+                  <p>${price?.data?.result?.ethusd}</p>
+                ) : (
+                  <div class="animate-pulse">
+                    <div class="h-3 w-[200px] bg-slate-300 rounded"></div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex items-center xs:justify-center gap-2 px-3 border-l-[1px] xs:border-l-neutral-darkCharcoal">
               <TbWorld className="text-3xl"></TbWorld>
               <div className="flex justify-center flex-col">
                 <p>Eth Supply</p>
-                <p>{supply.data?.result}</p>
+                {supply?.data?.result ? (
+                  <p>{supply.data?.result}</p>
+                ) : (
+                  <div class="animate-pulse">
+                    <div class="h-3 w-[250px] bg-slate-300 rounded"></div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div className="w-[95vw]">
-        <div className="shadow-xl rounded-[15px] overflow-hidden">
-          <div className="flex flex-col gap-3 w-full px-5 pb-5 mt-4">
-            <p>Total of {currentBlock.toLocaleString()} blocks</p>
-            <div
-              className="grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
-              style={{
-                gridTemplateColumns:
-                  "auto 120px 120px 50px 1fr 1fr 120px 120px",
-              }}
-            >
-              <PiCubeDuotone className="text-3xl opacity-80" />
-              <p className="text-base font-bold">Block</p>
-              <p className="text-base font-bold">Age</p>
-              <p className="text-base font-bold">Txn</p>
-              <p className="text-base font-bold">Fee Recipient</p>
-              <p className="text-base font-bold">Gas Used</p>
-              <p className="text-base font-bold">Gas Limit</p>
-              <p className="text-base font-bold">Base Fee</p>
-            </div>
-            {tenBlockWithDetails
-              .filter(
-                (_, index) => index >= startIndex && index <= startIndex + 10
-              )
-              ?.map((item, index) => (
-                <div
-                  key={index}
-                  className="grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
-                  style={{
-                    gridTemplateColumns:
-                      "auto 120px 120px 50px 1fr 1fr 120px 120px",
-                  }}
-                >
-                  <PiCubeDuotone className="text-3xl opacity-80" />
-                  <Link
-                    href={`/block/${item.number}`}
-                    className="text-md cursor-pointer"
+      <div className="w-[95vw] overflow-auto">
+        <div className="shadow-xl min-w-[1000px] rounded-[15px] overflow-hidden">
+          {tenBlockWithDetails?.length > 0 ? (
+            <div className="flex flex-col gap-3 w-full px-5 pb-5 mt-4">
+              <p>Total of {currentBlock.toLocaleString()} blocks</p>
+              <div
+                className="grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
+                style={{
+                  gridTemplateColumns:
+                    "auto 120px 120px 50px 1fr 1fr 120px 120px",
+                }}
+              >
+                <PiCubeDuotone className="text-3xl opacity-80" />
+                <p className="text-base font-bold">Block</p>
+                <p className="text-base font-bold">Age</p>
+                <p className="text-base font-bold">Txn</p>
+                <p className="text-base font-bold">Fee Recipient</p>
+                <p className="text-base font-bold">Gas Used</p>
+                <p className="text-base font-bold">Gas Limit</p>
+                <p className="text-base font-bold">Base Fee</p>
+              </div>
+              {tenBlockWithDetails
+                .filter(
+                  (_, index) => index >= startIndex && index <= startIndex + 10
+                )
+                ?.map((item, index) => (
+                  <div
+                    key={index}
+                    className="grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
+                    style={{
+                      gridTemplateColumns:
+                        "auto 120px 120px 50px 1fr 1fr 120px 120px",
+                    }}
                   >
-                    {item.number}
-                  </Link>
-                  <p className="text-md">
-                    {timeAgoFromTimestamp(item.timestamp)}
-                  </p>
-                  <p className="text-md">{item.transactions.length}</p>
-                  <p className="text-sm">
-                    {item.miner.substring(0, 8)}...
-                    {item.miner.substr(item.miner.length - 8)}
-                  </p>
-                  <div className="w-full flex flex-col items-center justify-center gap-1">
-                    <p className="text-center">
-                      {Number(item.gasUsed).toLocaleString()}{" "}
-                      <span className="text-gray-500">
-                        (
-                        {(
-                          (Number(item.gasUsed) / Number(item.gasLimit)) *
-                          100
-                        ).toFixed(1)}
-                        %)
-                      </span>
+                    <PiCubeDuotone className="text-3xl opacity-80" />
+                    <Link
+                      href={`/block/${item.number}`}
+                      className="text-primary-deepBlue cursor-pointer font-medium"
+                    >
+                      {item.number}
+                    </Link>
+                    <p className="text-md">
+                      {timeAgoFromTimestamp(item.timestamp)}
                     </p>
-                    <div className="h-[2px] w-full bg-gray-500 rounded-[200px] overflow-hidden">
-                      <div
-                        className="h-[2px] bg-status-successGreen"
-                        style={{
-                          width: `${(
+                    <p className="text-md">{item.transactions.length}</p>
+                    <Link
+                      href={`/account/${item?.miner}`}
+                      className="text-primary-deepBlue cursor-pointer font-medium"
+                    >
+                      {item.miner.substring(0, 8)}...
+                      {item.miner.substr(item.miner.length - 8)}
+                    </Link>
+                    <div className="w-full flex flex-col items-center justify-center gap-1">
+                      <p className="text-center">
+                        {Number(item.gasUsed).toLocaleString()}{" "}
+                        <span className="text-gray-500">
+                          (
+                          {(
                             (Number(item.gasUsed) / Number(item.gasLimit)) *
                             100
-                          ).toFixed(1)}%`,
-                        }}
-                      ></div>
+                          ).toFixed(1)}
+                          %)
+                        </span>
+                      </p>
+                      <div className="h-[2px] w-full bg-gray-500 rounded-[200px] overflow-hidden">
+                        <div
+                          className="h-[2px] bg-status-successGreen"
+                          style={{
+                            width: `${(
+                              (Number(item.gasUsed) / Number(item.gasLimit)) *
+                              100
+                            ).toFixed(1)}%`,
+                          }}
+                        ></div>
+                      </div>
                     </div>
+                    <p>{Number(item.gasLimit).toLocaleString()}</p>
+                    <p>
+                      {Number(
+                        ethers.formatUnits(item.baseFeePerGas, "gwei")
+                      ).toFixed(3)}{" "}
+                      Gwei
+                    </p>
                   </div>
-                  <p>{Number(item.gasLimit).toLocaleString()}</p>
-                  <p>
-                    {Number(
-                      ethers.formatUnits(item.baseFeePerGas, "gwei")
-                    ).toFixed(3)}{" "}
-                    Gwei
-                  </p>
-                </div>
-              ))}
-          </div>
-          <div className="w-full flex items-center justify-center my-4">
-            <Pagination count={10} onChange={handlePage} />
-          </div>
+                ))}
+            </div>
+          ) : (
+            <div class="animate-pulse mt-4">
+              <div class="h-[652px] w-full bg-slate-300 rounded"></div>
+            </div>
+          )}
         </div>
+      </div>
+      <div className="w-full flex items-center justify-center my-4">
+        <Pagination count={10} onChange={handlePage} />
       </div>
     </div>
   );
