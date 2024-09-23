@@ -117,6 +117,7 @@ export default function Index() {
       setGasPrice(ethers.formatUnits(gasPrice, "gwei"));
     } catch (error) {
       console.log("something when wrong...", error);
+      accountDetails();
     }
   };
 
@@ -147,6 +148,10 @@ export default function Index() {
         console.error("Error fetching balance: ", error);
       }
     }
+  };
+
+  const openModal = () => {
+    web3Modal.open();
   };
 
   function timeAgoFromTimestamp(timestamp) {
@@ -193,6 +198,7 @@ export default function Index() {
         isConnected={isConnected}
         address={address}
         connectWallet={connectEthereumWallet}
+        openModal={openModal}
       />
       <div className="bg-header p-8 w-full">
         <div className="flex items-center justify-center gap-8 flex-col xl:flex-row">

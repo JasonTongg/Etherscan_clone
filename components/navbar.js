@@ -2,7 +2,12 @@ import React from "react";
 import { LiaEthereum } from "react-icons/lia";
 import Link from "next/link";
 
-export default function navbar({ isConnected, address, connectWallet }) {
+export default function navbar({
+  isConnected,
+  address,
+  connectWallet,
+  openModal,
+}) {
   return (
     <div className="bg-header2 flex items-center justify-between w-full px-8 sm:px-20 gap-5 py-5">
       <Link
@@ -13,7 +18,10 @@ export default function navbar({ isConnected, address, connectWallet }) {
         <p className="text-2xl">Etherscan Clone</p>
       </Link>
       {isConnected ? (
-        <p className="text-xl text-neutral-lightGray">
+        <p
+          className="text-xl text-neutral-lightGray cursor-pointer"
+          onClick={openModal}
+        >
           {address.substring(0, 8)}...{address.substr(address.length - 8)}
         </p>
       ) : (

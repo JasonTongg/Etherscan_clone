@@ -136,6 +136,7 @@ export default function BlockDetail() {
         console.log(transactionDetails);
       } catch (error) {
         console.log("something went wrong...", error);
+        accountDetails();
       }
     }
   };
@@ -196,12 +197,17 @@ export default function BlockDetail() {
     accountDetails();
   }, [dispatch, block]);
 
+  const openModal = () => {
+    web3Modal.open();
+  };
+
   return (
     <div className="flex flex-col items-center w-full">
       <Navbar
         isConnected={isConnected}
         address={address}
         connectWallet={connectEthereumWallet}
+        openModal={openModal}
       />
       <div className="bg-header p-8 w-full">
         <div className="flex items-center justify-center gap-8 flex-col xl:flex-row">

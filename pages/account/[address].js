@@ -76,6 +76,7 @@ export default function AccountDetail() {
   const router = useRouter();
   const { address: addressQuery } = router.query;
   const [search, setSearch] = useState("");
+  const [tabActive, setTabActive] = useState(0);
 
   function checkEthereumInput(input) {
     // Regular expressions to match Ethereum account addresses and transaction hashes
@@ -100,16 +101,52 @@ export default function AccountDetail() {
 
   const apiKey = process.env.ETHERSCAN_KEY;
 
+  const fetchInternal = async (page = 1) => {
+    if (addressQuery) {
+      try {
+        const getCurrentBlock = await provider.getBlockNumber();
+        const urls = [
+          `https://api.etherscan.io/api?module=account&action=txlistinternal&address=${addressQuery}&startblock=0&endblock=${getCurrentBlock}&page=${page}&offset=10&sort=desc&apikey=${apiKey}`,
+        ];
+        const [internalTxListResponse] = await Promise.all(
+          urls.map((url) => fetch(url).then((res) => res.json()))
+        );
+        setInternalTxList(internalTxListResponse.result);
+      } catch (error) {
+        console.error("Error fetching data from Etherscan API:", error);
+        fetchInternal(1);
+      }
+    }
+  };
+
+  const fetchTransaction = async (page = 1) => {
+    if (addressQuery) {
+      try {
+        const getCurrentBlock = await provider.getBlockNumber();
+        const urls = [
+          `https://api.etherscan.io/api?module=account&action=txlist&address=${addressQuery}&startblock=0&endblock=${getCurrentBlock}&page=${page}&offset=10&sort=desc&apikey=${apiKey}`,
+        ];
+        const [txListResponse] = await Promise.all(
+          urls.map((url) => fetch(url).then((res) => res.json()))
+        );
+        setTxList(txListResponse.result);
+      } catch (error) {
+        console.error("Error fetching data from Etherscan API:", error);
+        fetchTransaction(1);
+      }
+    }
+  };
+
   // Function to call all APIs
-  const fetchAllData = async () => {
+  const fetchAllData = async (page = 1) => {
     if (addressQuery) {
       try {
         const getCurrentBlock = await provider.getBlockNumber();
         // URLs for each API call
         const urls = [
           `https://api.etherscan.io/api?module=account&action=balance&address=${addressQuery}&tag=latest&apikey=${apiKey}`,
-          `https://api.etherscan.io/api?module=account&action=txlist&address=${addressQuery}&startblock=0&endblock=${getCurrentBlock}&page=1&offset=10&sort=desc&apikey=${apiKey}`,
-          `https://api.etherscan.io/api?module=account&action=txlistinternal&address=${addressQuery}&startblock=0&endblock=${getCurrentBlock}&page=1&offset=10&sort=desc&apikey=${apiKey}`,
+          `https://api.etherscan.io/api?module=account&action=txlist&address=${addressQuery}&startblock=0&endblock=${getCurrentBlock}&page=${page}&offset=10&sort=desc&apikey=${apiKey}`,
+          `https://api.etherscan.io/api?module=account&action=txlistinternal&address=${addressQuery}&startblock=0&endblock=${getCurrentBlock}&page=${page}&offset=10&sort=desc&apikey=${apiKey}`,
           // `https://api.etherscan.io/api?module=account&action=tokentx&contractaddress=${addressQuery}&address=${addressQuery}&page=1&offset=100&startblock=0&endblock=27025780&sort=asc&apikey=${apiKey}`,
           // `https://api.etherscan.io/api?module=account&action=tokennfttx&contractaddress=${addressQuery}&address=${addressQuery}&page=1&offset=100&startblock=0&endblock=27025780&sort=asc&apikey=${apiKey}`,
           // `https://api.etherscan.io/api?module=account&action=token1155tx&contractaddress=${addressQuery}&address=${addressQuery}&page=1&offset=100&startblock=0&endblock=99999999&sort=asc&apikey=${apiKey}`,
@@ -138,6 +175,7 @@ export default function AccountDetail() {
         );
       } catch (error) {
         console.error("Error fetching data from Etherscan API:", error);
+        fetchAllData(1);
       }
     }
   };
@@ -189,7 +227,10 @@ export default function AccountDetail() {
   }
 
   const handlePage = (e, page) => {
-    setStartIndex((page - 1) * 10 - 1);
+    fetchInternal(page + 1);
+    fetchTransaction(page + 1);
+    setTxList([]);
+    setInternalTxList([]);
   };
 
   useEffect(() => {
@@ -198,12 +239,17 @@ export default function AccountDetail() {
     fetchAllData();
   }, [dispatch, addressQuery]);
 
+  const openModal = () => {
+    web3Modal.open();
+  };
+
   return (
     <div className="flex flex-col items-center justify-center w-full">
       <Navbar
         isConnected={isConnected}
         address={address}
         connectWallet={connectEthereumWallet}
+        openModal={openModal}
       />
       <div className="bg-header p-8 w-full">
         <div className="flex items-center justify-center gap-8 flex-col xl:flex-row">
@@ -264,73 +310,210 @@ export default function AccountDetail() {
         </div>
       </div>
       <div>
-        <p>{addressQuery}</p>
-        <p>{balance}</p>
-        <p>Transaction</p>
-        {txList?.map((item, index) => (
-          <div key={index}>
-            <Link
-              href={`/transaction/${item?.hash}`}
-              className="text-primary-deepBlue cursor-pointer font-medium"
-            >
-              hash: {item.hash}
-            </Link>
-            <Link
-              href={`/block/${item?.blockNumber}`}
-              className="text-primary-deepBlue cursor-pointer font-medium"
-            >
-              Block: {item.blockNumber}
-            </Link>
-            <p>Timestamp: {timeAgoFromTimestamp(item.timeStamp)}</p>
-            <Link
-              href={`/account/${item?.from}`}
-              className="text-primary-deepBlue cursor-pointer font-medium"
-            >
-              From: {item.from}
-            </Link>
-            <p>{addressQuery.toLowerCase() === item.from ? "OUT" : "IN"}</p>
-            <Link
-              href={`/account/${item?.to}`}
-              className="text-primary-deepBlue cursor-pointer font-medium"
-            >
-              To: {item.to}
-            </Link>
-            <p>Amount: {item.value}</p>
-          </div>
-        ))}
-        <p>Internal Transaction</p>
-        {internalTxList?.map((item, index) => (
-          <div key={index}>
-            <Link
-              href={`/transaction/${item?.hash}`}
-              className="text-primary-deepBlue cursor-pointer font-medium"
-            >
-              hash: {item.hash}
-            </Link>
-            <Link
-              href={`/block/${item?.blockNumber}`}
-              className="text-primary-deepBlue cursor-pointer font-medium"
-            >
-              Block: {item.blockNumber}
-            </Link>
-            <p>Timestamp: {timeAgoFromTimestamp(item.timeStamp)}</p>
-            <Link
-              href={`/account/${item?.from}`}
-              className="text-primary-deepBlue cursor-pointer font-medium"
-            >
-              From: {item.from}
-            </Link>
-            <p>{addressQuery.toLowerCase() === item.from ? "OUT" : "IN"}</p>
-            <Link
-              href={`/account/${item?.to}`}
-              className="text-primary-deepBlue cursor-pointer font-medium"
-            >
-              To: {item.to}
-            </Link>
-            <p>Amount: {item.value}</p>
-            <p>Txn Fee: {item.gasPrice * item.gasUsed}</p>
-          </div>
-        ))}
+        <p className="shadow-lg rounded-[5px] px-6 py-3 w-fit mt-4 bg-primary-deepBlue text-white">
+          Balance: {ethers.formatEther(balance)} ETH
+        </p>
+        <div className="self-start flex gap-4 items-center mt-5 mx-auto w-[95vw]">
+          <button
+            style={{
+              backgroundColor: `${
+                tabActive === 0 ? "#1c1f4f" : "rgba(229,231,235)"
+              }`,
+              color: `${tabActive === 0 ? "white" : "black"}`,
+            }}
+            className="py-2 px-4 rounded-[5px] transition-all"
+            onClick={() => setTabActive(0)}
+          >
+            Transaction
+          </button>
+          <button
+            style={{
+              backgroundColor: `${
+                tabActive === 1 ? "#1c1f4f" : "rgba(229,231,235)"
+              }`,
+              color: `${tabActive === 1 ? "white" : "black"}`,
+            }}
+            className="py-2 px-4 rounded-[5px] transition-all"
+            onClick={() => setTabActive(1)}
+          >
+            Internal Transaction
+          </button>
+        </div>
+        <div className="w-[95vw] overflow-auto">
+          {tabActive === 0 ? (
+            <div className="shadow-xl min-w-[1200px] rounded-[15px] overflow-hidden">
+              {txList?.length > 0 ? (
+                <div className="flex flex-col gap-3 w-full px-5 pb-5 mt-4">
+                  <div
+                    className="grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
+                    style={{
+                      gridTemplateColumns: "auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr",
+                    }}
+                  >
+                    <FiFileText className="text-3xl opacity-80" />
+                    <p className="text-base font-bold">Transaction Hash</p>
+                    <p className="text-base font-bold">Block</p>
+                    <p className="text-base font-bold">Timestamp</p>
+                    <p className="text-base font-bold">From</p>
+                    <p className="text-base font-bold">To</p>
+                    <p className="text-base font-bold">Amount (ETH)</p>
+                    <p className="text-base font-bold">Txn Fee (ETH)</p>
+                  </div>
+                  {txList?.map((txDetails, index) => (
+                    <div
+                      key={index}
+                      className="[&>*]:break-all grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
+                      style={{
+                        gridTemplateColumns: "auto 1fr 1fr 1fr 1fr 1fr 1fr 1fr",
+                      }}
+                    >
+                      <FiFileText className="text-3xl opacity-80" />
+                      <Link
+                        href={`/transaction/${txDetails?.hash}`}
+                        className="text-primary-deepBlue cursor-pointer font-medium"
+                      >
+                        {txDetails.hash.substring(0, 5)}...
+                        {txDetails.hash.substr(txDetails.hash.length - 5)}
+                      </Link>
+                      <Link
+                        href={`/block/${txDetails?.blockNumber}`}
+                        className="text-primary-deepBlue cursor-pointer font-medium"
+                      >
+                        {txDetails.blockNumber}
+                      </Link>
+                      <p>{timeAgoFromTimestamp(txDetails?.timeStamp)}</p>
+                      <Link
+                        href={`/account/${txDetails?.from}`}
+                        className="text-primary-deepBlue cursor-pointer font-medium flex items-center justify-center gap-4"
+                      >
+                        <p>
+                          {txDetails.from.substring(0, 5)}...
+                          {txDetails.from.substr(txDetails.from.length - 5)}
+                        </p>
+                        <p>
+                          {addressQuery.toLowerCase() === txDetails.from
+                            ? "OUT"
+                            : "IN"}
+                        </p>
+                      </Link>
+
+                      <Link
+                        href={`/account/${txDetails?.to}`}
+                        className="text-primary-deepBlue cursor-pointer font-medium"
+                      >
+                        {txDetails.to?.substring(0, 5)}...
+                        {txDetails.to?.substr(txDetails.to.length - 5) ||
+                          "Contract Interaction"}
+                      </Link>
+                      <p>
+                        {ethers.formatEther(txDetails.value).length > 10 ||
+                        ethers.formatEther(txDetails.value) === "0.0"
+                          ? 0
+                          : ethers.formatEther(txDetails.value)}{" "}
+                        ETH
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {ethers
+                          .formatEther(BigInt(txDetails?.gasPrice))
+                          .substring(0, 13)}{" "}
+                        ETH
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div class="animate-pulse mt-4">
+                  <div class="h-[500px] w-full bg-slate-300 rounded"></div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="shadow-xl min-w-[1200px] rounded-[15px] overflow-hidden">
+              {internalTxList?.length > 0 ? (
+                <div className="flex flex-col gap-3 w-full px-5 pb-5 mt-4">
+                  <div
+                    className="grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
+                    style={{
+                      gridTemplateColumns: "50px 1.5fr 1fr 1fr 1fr 1fr 1fr",
+                    }}
+                  >
+                    <FiFileText className="text-3xl opacity-80" />
+                    <p className="text-base font-bold">
+                      Parent Transaction Hash
+                    </p>
+                    <p className="text-base font-bold">Block</p>
+                    <p className="text-base font-bold">Timestamp</p>
+                    <p className="text-base font-bold">From</p>
+                    <p className="text-base font-bold">To</p>
+                    <p className="text-base font-bold">Amount (ETH)</p>
+                  </div>
+                  {internalTxList?.map((txDetails, index) => (
+                    <div
+                      key={index}
+                      className="[&>*]:break-all grid items-center gap-2 w-full justify-center justify-items-center border-t-[1px] border-gray-300 pt-2"
+                      style={{
+                        gridTemplateColumns: "50px 1.5fr 1fr 1fr 1fr 1fr 1fr",
+                      }}
+                    >
+                      <FiFileText className="text-3xl opacity-80" />
+                      <Link
+                        href={`/transaction/${txDetails?.hash}`}
+                        className="text-primary-deepBlue cursor-pointer font-medium"
+                      >
+                        {txDetails.hash.substring(0, 5)}...
+                        {txDetails.hash.substr(txDetails.hash.length - 5)}
+                      </Link>
+                      <Link
+                        href={`/block/${txDetails?.blockNumber}`}
+                        className="text-primary-deepBlue cursor-pointer font-medium"
+                      >
+                        {txDetails.blockNumber}
+                      </Link>
+                      <p>{timeAgoFromTimestamp(txDetails?.timeStamp)}</p>
+                      <Link
+                        href={`/account/${txDetails?.from}`}
+                        className="text-primary-deepBlue cursor-pointer font-medium flex items-center justify-center gap-4"
+                      >
+                        <p>
+                          {txDetails.from.substring(0, 5)}...
+                          {txDetails.from.substr(txDetails.from.length - 5)}
+                        </p>
+                        <p>
+                          {addressQuery.toLowerCase() === txDetails.from
+                            ? "OUT"
+                            : "IN"}
+                        </p>
+                      </Link>
+
+                      <Link
+                        href={`/account/${txDetails?.to}`}
+                        className="text-primary-deepBlue cursor-pointer font-medium"
+                      >
+                        {txDetails.to?.substring(0, 5)}...
+                        {txDetails.to?.substr(txDetails.to.length - 5) ||
+                          "Contract Interaction"}
+                      </Link>
+                      <p>
+                        {ethers.formatEther(txDetails.value).length > 10 ||
+                        ethers.formatEther(txDetails.value) === "0.0"
+                          ? 0
+                          : ethers.formatEther(txDetails.value)}{" "}
+                        ETH
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div class="animate-pulse mt-4">
+                  <div class="h-[550px] w-full bg-slate-300 rounded"></div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="w-full flex items-center justify-center my-4">
+        <Pagination count={5} onChange={handlePage} />
       </div>
     </div>
   );

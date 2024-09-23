@@ -127,6 +127,7 @@ export default function Transactions() {
       console.log(block);
     } catch (error) {
       console.log("something went wrong...", error);
+      accountDetails();
     }
   };
 
@@ -186,12 +187,17 @@ export default function Transactions() {
     accountDetails();
   }, [dispatch, transaction]);
 
+  const openModal = () => {
+    web3Modal.open();
+  };
+
   return (
     <div className="flex flex-col items-center justify-center w-full">
       <Navbar
         isConnected={isConnected}
         address={address}
         connectWallet={connectEthereumWallet}
+        openModal={openModal}
       />
       <div className="bg-header p-8 w-full">
         <div className="flex items-center justify-center gap-8 flex-col xl:flex-row">
